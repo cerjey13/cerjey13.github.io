@@ -1,10 +1,6 @@
-import { PartialType } from '@nestjs/mapped-types';
-import { Product } from 'src/products/entities/product.entity';
-import { User } from 'src/users/entities/user.entity';
+import { OmitType, PartialType } from '@nestjs/swagger';
 import { CreateOrderDto } from './create-order.dto';
 
-export class UpdateOrderDto extends PartialType(CreateOrderDto) {
-  user: User;
-
-  products: Product[];
-}
+export class UpdateOrderDto extends PartialType(
+  OmitType(CreateOrderDto, ['products']),
+) {}

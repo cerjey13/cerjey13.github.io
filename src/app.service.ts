@@ -13,9 +13,8 @@ export class AppService {
 
   getHello(): any {
     return {
-      apiKey: this.configService.apiKey,
-      database: this.configService.database.name,
-      databasePort: this.configService.database.port,
+      database: this.configService.database.dbName,
+      databasePort: this.configService.database.dbPort,
       message: this.tasks,
     };
   }

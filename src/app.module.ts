@@ -13,6 +13,8 @@ import { OrdersModule } from './orders/orders.module';
 import { CustomerModule } from './customer/customer.module';
 import { BrandsModule } from './brands/brands.module';
 import { enviroments } from './enviroment';
+import { DatabaseModule } from './database/database.module';
+import { OrderItemModule } from './order-item/order-item.module';
 import config from './config';
 
 @Module({
@@ -20,11 +22,11 @@ import config from './config';
     ConfigModule.forRoot({
       envFilePath: enviroments[process.env.NODE_ENV] || '.env',
       load: [config],
-      validationSchema: Joi.object({
-        API_KEY: Joi.number().required(),
-        DATABASE_NAME: Joi.string().required(),
-        DATABASE_PORT: Joi.number().required(),
-      }),
+      // validationSchema: Joi.object({
+      //   API_KEY: Joi.number().required(),
+      //   DATABASE_NAME: Joi.string().required(),
+      //   DATABASE_PORT: Joi.number().required(),
+      // }),
       isGlobal: true,
     }),
     ProductsModule,
@@ -34,6 +36,8 @@ import config from './config';
     CustomerModule,
     BrandsModule,
     HttpModule,
+    DatabaseModule,
+    OrderItemModule,
   ],
   controllers: [AppController],
   providers: [

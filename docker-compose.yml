@@ -1,0 +1,28 @@
+version: '3.3'
+
+services:
+  mongo:
+    image: mongo
+    container_name: mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - data:/data
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=root
+      - MONGO_INITDB_ROOT_PASSWORD=root
+
+  postgres:
+    image: postgres
+    container_name: postgresNestjs
+    ports:
+      - "5432:5432"
+    volumes:
+    - postgresData:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=root
+      - PGDATA=/var/lib/postgresql/data/pgdata
+volumes:
+  postgresData: {}
+  data: {}

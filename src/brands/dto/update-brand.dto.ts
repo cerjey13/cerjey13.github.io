@@ -1,4 +1,7 @@
-import { PartialType } from '@nestjs/mapped-types';
+import { PartialType } from '@nestjs/swagger';
 import { CreateBrandDto } from './create-brand.dto';
 
-export class UpdateBrandDto extends PartialType(CreateBrandDto) {}
+export class UpdateBrandDto extends PartialType(CreateBrandDto) {
+  readonly name?: string;
+  readonly image?: string;
+}

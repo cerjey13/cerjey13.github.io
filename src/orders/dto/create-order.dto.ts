@@ -1,15 +1,15 @@
-import { IsDate, IsNotEmpty } from 'class-validator';
-import { Product } from 'src/products/entities/product.entity';
-import { User } from 'src/users/entities/user.entity';
+import { IsArray, IsDate, IsMongoId, IsNotEmpty } from 'class-validator';
 
 export class CreateOrderDto {
   @IsDate()
   @IsNotEmpty()
-  date: Date;
+  readonly date: Date;
 
   @IsNotEmpty()
-  user: User;
+  @IsMongoId()
+  readonly customer: string;
 
   @IsNotEmpty()
-  products: Product[];
+  @IsArray()
+  readonly products: string[];
 }

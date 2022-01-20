@@ -1,77 +1,99 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { Model } from 'mongoose';
+import { InjectModel } from '@nestjs/mongoose';
+import { Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
+
 import { ProductsService } from 'src/products/products.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
-import { ConfigService } from '@nestjs/config';
+import { UserPostgres } from './entities/user-postgres.entity';
+import { CustomerService } from 'src/customer/customer.service';
 
 @Injectable()
 export class UsersService {
   constructor(
     private readonly productsService: ProductsService,
-    private readonly configService: ConfigService,
+    @InjectModel(User.name) private readonly usersModel: Model<User>,
+    @InjectRepository(UserPostgres)
+    private readonly userRepository: Repository<UserPostgres>,
+    private readonly customerService: CustomerService,
   ) {}
 
-  private counter = 1;
-  private users: User[] = [
-    {
-      id: this.counter,
-      email: 'Pedro@gmail.com',
-      password: 'Picapiedra123',
-      role: 'admin',
-    },
-  ];
-
-  create(createUserDto: CreateUserDto) {
-    this.counter++;
-    const newUser = {
-      id: this.counter,
-      ...createUserDto,
-    };
-    this.users.push(newUser);
-    return newUser;
+  async create(createUserDto: CreateUserDto) {
+    const newUser = await new this.usersModel(createUserDto);
+    return newUser.save();
   }
 
-  findAll() {
-    const apiKey = this.configService.get('API_KEY');
-    console.log(apiKey);
-    return this.users;
-  }
-
-  findOne(id: number) {
-    const user = this.users.find((item) => item.id === id);
-    if (!user) {
-      throw new NotFoundException(`user ${id} not found`);
+  async createPostgres(createUserDto: CreateUserDto) {
+    const newUser = await this.userRepository.create(createUserDto);
+    if (createUserDto.customerId) {
+      const customer = await this.customerService.findOnePostgres(
+        createUserDto.customerId,
+      );
+      newUser.customer = customer;
     }
+
+    return this.userRepository.save(newUser);
+  }
+
+  async findAll() {
+    return await this.usersModel.find().exec();
+  }
+
+  async findAllPostgres() {
+    return await this.userRepository.find({
+      relations: ['customer'],
+    });
+  }
+
+  async findOne(id: string) {
+    const user = await this.usersModel.findById(id).exec();
+    this.isUser(id, user);
     return user;
   }
 
-  getOrders(id: number) {
-    const user = this.findOne(id);
+  async findOnePostgres(id: number) {
+    const user = await this.userRepository.findOne(id);
+    return user;
+  }
+
+  async getOrders(id: string) {
+    const user = await this.findOne(id);
     return {
       date: new Date(),
       user,
-      products: this.productsService.findAll(),
+      products: await this.productsService.findAll(),
     };
   }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    const user = this.findOne(id);
-    const index = this.users.findIndex((index) => index.id == id);
-    this.users[index] = {
-      ...user,
-      ...updateUserDto,
-    };
-    return this.users[index];
+  async update(id: string, updateUserDto: UpdateUserDto) {
+    const user = await this.usersModel.findByIdAndUpdate(
+      id,
+      { $set: updateUserDto },
+      { new: true },
+    );
+    return user;
   }
 
-  remove(id: number) {
-    const index = this.findOne(id)
-      ? this.users.findIndex((index) => index.id === id)
-      : null;
-    return {
-      message: `User ${id} deleted`,
-      ...this.users.splice(index, 1),
-    };
+  async updatePostgres(id: number, updateUserDto: UpdateUserDto) {
+    const user = await this.userRepository.findOne(id);
+    this.userRepository.merge(user, updateUserDto);
+    return this.userRepository.save(user);
+  }
+
+  async remove(id: string) {
+    return await this.usersModel.findByIdAndDelete(id);
+  }
+
+  async removePostgres(id: number) {
+    return await this.userRepository.delete(id);
+  }
+
+  isUser(id, user) {
+    if (!user) {
+      throw new NotFoundException(`user ${id} not found`);
+    }
   }
 }
