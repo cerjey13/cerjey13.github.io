@@ -42,7 +42,7 @@ export class OrderItemService {
   }
 
   update(id: number, updateOrderItemDto: UpdateOrderItemDto) {
-    return `This action updates a #${id} orderItem`;
+    return `This action updates a #${id} orderItem: ${updateOrderItemDto}`;
   }
 
   remove(id: number) {

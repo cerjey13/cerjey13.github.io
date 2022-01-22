@@ -21,14 +21,14 @@ export class BrandPostgres {
   image: string;
 
   @CreateDateColumn({
-    name: 'create_at',
+    // name: 'create_at',
     type: 'timestamptz',
     default: () => 'CURRENT_TIMESTAMP',
   })
   createAt: Date;
 
   @UpdateDateColumn({
-    name: 'updated_at',
+    // name: 'updated_at',
     type: 'timestamptz',
     default: () => 'CURRENT_TIMESTAMP',
   })

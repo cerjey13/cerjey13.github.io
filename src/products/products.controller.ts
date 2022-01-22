@@ -10,6 +10,7 @@ import {
   HttpStatus,
   Query,
   ParseIntPipe,
+  UseGuards,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 
@@ -20,28 +21,38 @@ import { UpdateProductDto } from './dto/update-product.dto';
 import { MongoIdPipe } from '../common/pipe/mongo-id.pipe';
 import { FilterDto } from '../common/dto/filter.dto';
 import { PostgresUpdateProductDto } from './dto/update-product.dto copy';
+import { JwtGuard } from 'src/auth/guards/jwt.guard';
+import { Public } from 'src/auth/decorators/public.decorator';
+import { Roles } from 'src/auth/decorators/roles.decorator';
+import { Role } from 'src/auth/models/roles.model';
+import { RolesGuard } from 'src/auth/guards/roles.guard';
 
+@UseGuards(JwtGuard, RolesGuard)
 @ApiTags('products')
 @Controller('products')
 export class ProductsController {
   constructor(private readonly productsService: ProductsService) {}
 
+  @Public()
   @Get()
   getAll(@Query() params: FilterDto) {
     return this.productsService.findAll(params);
   }
 
+  @Public()
   @Get('postgres')
   getAllPostgres(@Query() params: FilterDto) {
     return this.productsService.findAllPostgres(params);
   }
 
+  @Public()
   @Get(':productId')
   @HttpCode(HttpStatus.ACCEPTED)
   getOne(@Param('productId', MongoIdPipe) productId: string) {
     return this.productsService.findOne(productId);
   }
 
+  @Public()
   @Get('postgres/:productId')
   getOnePostgres(@Param('productId') productId: number) {
     return this.productsService.findOnePostgres(productId);
@@ -52,6 +63,7 @@ export class ProductsController {
     return this.productsService.create(payload);
   }
 
+  @Roles(Role.ADMIN)
   @Post('postgres')
   createPostgres(@Body() createProductDto: PostgresCreateProductDto) {
     return this.productsService.createPostgres(createProductDto);

@@ -3,6 +3,7 @@ import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
+import * as bcrypt from 'bcrypt';
 
 import { ProductsService } from 'src/products/products.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -15,19 +16,26 @@ import { CustomerService } from 'src/customer/customer.service';
 export class UsersService {
   constructor(
     private readonly productsService: ProductsService,
+    private readonly customerService: CustomerService,
     @InjectModel(User.name) private readonly usersModel: Model<User>,
     @InjectRepository(UserPostgres)
     private readonly userRepository: Repository<UserPostgres>,
-    private readonly customerService: CustomerService,
   ) {}
 
   async create(createUserDto: CreateUserDto) {
-    const newUser = await new this.usersModel(createUserDto);
-    return newUser.save();
+    const newUser = new this.usersModel(createUserDto);
+    const hashPassword = await bcrypt.hash(newUser.password, 10);
+    newUser.password = hashPassword;
+    const model = await newUser.save();
+    const { password, ...user } = model.toJSON();
+    return user;
   }
 
   async createPostgres(createUserDto: CreateUserDto) {
     const newUser = await this.userRepository.create(createUserDto);
+    const hashPassword = await bcrypt.hash(newUser.password, 10);
+    newUser.password = hashPassword;
+
     if (createUserDto.customerId) {
       const customer = await this.customerService.findOnePostgres(
         createUserDto.customerId,
@@ -46,6 +54,13 @@ export class UsersService {
     return await this.userRepository.find({
       relations: ['customer'],
     });
+  }
+
+  async findByEmail(email: string) {
+    return await this.usersModel.findOne({ email }).exec();
+  }
+  async findByEmailPostgres(email: string) {
+    return await this.userRepository.findOne({ where: { email } });
   }
 
   async findOne(id: string) {

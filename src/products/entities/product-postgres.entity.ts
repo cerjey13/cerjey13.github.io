@@ -50,7 +50,7 @@ export class Productp {
   updatedAt: Date;
 
   @ManyToOne(() => BrandPostgres, (brand) => brand.products)
-  //@JoinColumn({ name: 'brand_id' })
+  @JoinColumn() //{ name: 'brand_id' }
   brands: BrandPostgres;
 
   @ManyToMany(() => CategoryPostgres, (category) => category.products)
@@ -63,5 +63,6 @@ export class Productp {
   //     name: 'category_id',
   //   },
   // })
+  @JoinTable()
   category: CategoryPostgres[];
 }

@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { HttpModule, HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
-import * as Joi from 'joi';
+// import * as Joi from 'joi';
 
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -15,6 +15,7 @@ import { BrandsModule } from './brands/brands.module';
 import { enviroments } from './enviroment';
 import { DatabaseModule } from './database/database.module';
 import { OrderItemModule } from './order-item/order-item.module';
+import { AuthModule } from './auth/auth.module';
 import config from './config';
 
 @Module({
@@ -38,6 +39,7 @@ import config from './config';
     HttpModule,
     DatabaseModule,
     OrderItemModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [
